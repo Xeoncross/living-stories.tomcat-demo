@@ -16,8 +16,8 @@
 
 package com.google.livingstories.servlet;
 
-import com.google.livingstories.gxps.ContentManagerHtml;
 import com.google.gxp.base.GxpContext;
+import com.google.livingstories.gxps.ContentManagerHtml;
 
 import java.io.IOException;
 

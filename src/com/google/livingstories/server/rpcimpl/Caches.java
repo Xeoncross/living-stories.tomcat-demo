@@ -26,7 +26,7 @@ import com.google.livingstories.client.PlayerContentItem;
 import com.google.livingstories.client.StartPageBundle;
 import com.google.livingstories.client.Theme;
 import com.google.livingstories.server.dataservices.ServerCache;
-import com.google.livingstories.server.dataservices.impl.AppEngineCacheImpl;
+import com.google.livingstories.server.dataservices.impl.StubCacheImpl;
 import com.google.livingstories.server.util.LRUCache;
 
 import java.util.Date;
@@ -38,7 +38,7 @@ import java.util.Map;
  */
 public class Caches {
   // Use a no-expiration memcache to store the most commonly used things.
-  private static final ServerCache noExpirationCache = new AppEngineCacheImpl(0);
+  private static final ServerCache noExpirationCache = new StubCacheImpl();
 
   public static void clearAll() {
     noExpirationCache.clear();

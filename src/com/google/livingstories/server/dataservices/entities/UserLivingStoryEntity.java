@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.jdo.annotations.Extension;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
@@ -54,6 +55,7 @@ public class UserLivingStoryEntity implements Serializable, JSONSerializable {
   private boolean subscribedToEmails = false;
   
   @Persistent
+  @Extension(vendorName = "datanucleus", key = "is-second-class", value="false")
   private Date lastVisitedTime;
   
   @Persistent

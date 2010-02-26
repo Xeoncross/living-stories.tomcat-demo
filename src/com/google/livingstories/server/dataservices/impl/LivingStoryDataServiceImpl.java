@@ -34,7 +34,6 @@ import javax.jdo.Transaction;
  * the database on every call and does not handle caching, etc.
  */
 public class LivingStoryDataServiceImpl implements LivingStoryDataService {
-  
   @Override
   public synchronized LivingStory save(Long id, String urlName, String title, 
       PublishState publishState, String summary) throws IllegalArgumentException {

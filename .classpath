@@ -13,5 +13,8 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/jtidy-r910.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gwt-image-loader-1.1.1.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/google-collect-1.0.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/datanucleus-rdbms-1.1.5.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/mail.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/mysql-connector-java-5.1.12-bin.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
