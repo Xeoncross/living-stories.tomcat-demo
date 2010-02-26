@@ -31,8 +31,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.Embedded;
 import javax.jdo.annotations.Extension;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
@@ -70,29 +68,25 @@ public class LivingStoryEntity
     @SuppressWarnings("unused")
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    @Extension(vendorName="datanucleus", key="gae.encoded-pk", value="true")
-    private String id;
+    private Long id;
 
     @Persistent
-    @Embedded(members={
-      @Persistent(name="value", columns=@Column(name="content"))
-    })
-    private LongStringHolder content;
+    private String content;
     
     @Persistent
     private Date timestamp;
 
     Summary(String content, Date timestamp) {
-      this.content = new LongStringHolder(content);
+      this.content = content;
       this.timestamp = timestamp;
     }
 
     public String getContent() {
-      return content.getValue();
+      return content;
     }
 
     public void setContent(String content) {
-      this.content = new LongStringHolder(content);
+      this.content = content;
     }
     
     private Date getTimestamp() {
@@ -103,7 +97,7 @@ public class LivingStoryEntity
       JSONObject object = new JSONObject();
       try {
         object.put("id", id);
-        object.put("content", content.getValue());
+        object.put("content", content);
         object.put("timestamp", SimpleDateFormat.getInstance().format(timestamp));
       } catch (JSONException ex) {
         throw new RuntimeException(ex);

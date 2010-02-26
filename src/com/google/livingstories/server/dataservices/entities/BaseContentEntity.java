@@ -51,11 +51,11 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.jdo.JDOException;
-import javax.jdo.annotations.Column;
 import javax.jdo.annotations.Embedded;
 import javax.jdo.annotations.EmbeddedOnly;
 import javax.jdo.annotations.IdGeneratorStrategy;
@@ -70,6 +70,8 @@ import javax.jdo.annotations.PrimaryKey;
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class BaseContentEntity
     implements Serializable, JSONSerializable, HasSerializableLivingStoryId {
+  private static final Logger logger = Logger.getLogger("BaseContentEntity");
+
   private static final Pattern EXTERNAL_LINK_PATTERN =
       Pattern.compile("<a\\b[^>]+?\\bhref=\"(?!javascript:)[^>]+?>",
           Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
@@ -90,10 +92,7 @@ public class BaseContentEntity
 
   // This is the HTML content.
   @Persistent
-  @Embedded(members={
-      @Persistent(name="value", columns=@Column(name="content"))
-  })
-  private LongStringHolder content;
+  private String content;
   
   @Persistent
   private Importance importance = Importance.MEDIUM;
@@ -130,15 +129,12 @@ public class BaseContentEntity
     private Double longitude;
     
     @Persistent
-    @Embedded(members={
-        @Persistent(name="value", columns=@Column(name="description"))
-    })
-    private LongStringHolder description;
+    private String description;
 
     LocationEntity(Double latitude, Double longitude, String description) {
       this.latitude = latitude;
       this.longitude = longitude;
-      this.description = new LongStringHolder(description);
+      this.description = description;
     }
 
     public Double getLatitude() {
@@ -150,7 +146,7 @@ public class BaseContentEntity
     }
 
     public String getDescription() {
-      return description.getValue();
+      return description;
     }
     
     public void setLatitude(Double latitude) {
@@ -162,11 +158,11 @@ public class BaseContentEntity
     }
 
     public void setDescription(String description) {
-      this.description = new LongStringHolder(description);
+      this.description = description;
     }
 
     public Location toClientObject() {
-      return new Location(latitude, longitude, description.getValue());
+      return new Location(latitude, longitude, description);
     }
     
     @Override
@@ -175,7 +171,7 @@ public class BaseContentEntity
       try {
         object.put("latitude", latitude);
         object.put("longitude", longitude);
-        object.put("description", description.getValue());
+        object.put("description", description);
       } catch (JSONException ex) {
         throw new RuntimeException(ex);
       }
@@ -196,10 +192,7 @@ public class BaseContentEntity
   
   /*** Fields related to the source ***/
   @Persistent
-  @Embedded(members={
-      @Persistent(name="value", columns=@Column(name="sourceDescription"))
-  })
-  private LongStringHolder sourceDescription;
+  private String sourceDescription;
   
   @Persistent
   private Long sourceContentEntityId;
@@ -213,16 +206,10 @@ public class BaseContentEntity
   private Date endDate;
   
   @Persistent
-  @Embedded(members={
-      @Persistent(name="value", columns=@Column(name="eventUpdate"))
-  })
-  private LongStringHolder eventUpdate;
+  private String eventUpdate;
   
   @Persistent
-  @Embedded(members={
-      @Persistent(name="value", columns=@Column(name="eventSummary"))
-  })
-  private LongStringHolder eventSummary;
+  private String eventSummary;
 
   /*** Property shared by Background and Player types ***/
   
@@ -272,10 +259,7 @@ public class BaseContentEntity
   private Date narrativeDate;
   
   @Persistent
-  @Embedded(members={
-      @Persistent(name="value", columns=@Column(name="narrativeSummary"))
-  })
-  private LongStringHolder narrativeSummary;
+  private String narrativeSummary;
 
   private BaseContentEntity() {}
   
@@ -283,7 +267,8 @@ public class BaseContentEntity
       String content, Importance importance, Long livingStoryId) {
     this.timestamp = timestamp;
     this.contentItemType = contentItemType;
-    this.content = new LongStringHolder(content);
+    this.content = content;
+//    this.content = new LongStringHolder(content);
     this.importance = importance;
     this.livingStoryId = livingStoryId;
   }
@@ -310,11 +295,13 @@ public class BaseContentEntity
   }
 
   public String getContent() {
-    return content.getValue();
+    return content;
+//    return content.getValue();
   }
 
   public void setContent(String content) {
-    this.content = new LongStringHolder(content);
+    this.content = content;
+//    this.content = new LongStringHolder(content);
   }
 
   public Importance getImportance() {
@@ -418,12 +405,12 @@ public class BaseContentEntity
   }
 
   public String getSourceDescription() {
-    return sourceDescription == null ? null : sourceDescription.getValue();
+    return sourceDescription == null ? null : sourceDescription;
   }
 
   public void setSourceDescription(String sourceDescription) {
     if (sourceDescription != null) {
-      this.sourceDescription = new LongStringHolder(sourceDescription);
+      this.sourceDescription = sourceDescription;
     }
   }
 
@@ -444,11 +431,11 @@ public class BaseContentEntity
   }
   
   public String getEventUpdate() {
-    return eventUpdate.getValue();
+    return eventUpdate;
   }
 
   public String getEventSummary() {
-    return eventSummary.getValue();
+    return eventSummary;
   }
   
   public void setEventStartDate(Date eventStartDate) {
@@ -460,11 +447,11 @@ public class BaseContentEntity
   }
 
   public void setEventUpdate(String eventUpdate) {
-    this.eventUpdate = new LongStringHolder(eventUpdate);
+    this.eventUpdate = eventUpdate;
   }
   
   public void setEventSummary(String eventSummary) {
-    this.eventSummary = new LongStringHolder(eventSummary);
+    this.eventSummary = eventSummary;
   }
   
   public String getName() {
@@ -565,17 +552,20 @@ public class BaseContentEntity
   }
 
   public String getNarrativeSummary() {
-    return narrativeSummary == null ? null : narrativeSummary.getValue();
+    return narrativeSummary == null ? null : narrativeSummary;
   }
 
   public void setNarrativeSummary(String narrativeSummary) {
-    this.narrativeSummary = new LongStringHolder(narrativeSummary);
+    this.narrativeSummary = narrativeSummary;
   }
     
   public void copyFields(BaseContentItem clientContentItem) {
     setTimestamp(clientContentItem.getTimestamp());
     setContentItemType(clientContentItem.getContentItemType());
     setContent(fixLinks(trimWithBrs(clientContentItem.getContent())));
+    logger.severe("CLIENT CONTENT: " + clientContentItem.getContent());
+    logger.severe("FIXED CONTENT: " + fixLinks(trimWithBrs(clientContentItem.getContent())));
+    logger.severe("SERVER CONTENT: " + getContent());
     setImportance(clientContentItem.getImportance());
     setLivingStoryId(clientContentItem.getLivingStoryId());
     setThemeIds(clientContentItem.getThemeIds());
@@ -685,7 +675,7 @@ public class BaseContentEntity
   private BaseContentItem toClientObjectImpl() {
     switch (getContentItemType()) {
       case EVENT:
-        if (getEventUpdate().isEmpty()) {
+        if (GlobalUtil.isContentEmpty(getEventUpdate())) {
           return new DefaultContentItem(getId(), getLivingStoryId());
         } else {
           return new EventContentItem(getId(), getTimestamp(), getContributorIds(),

@@ -117,6 +117,7 @@ public class ContentRpcImpl extends RemoteServiceServlet implements ContentRpcSe
     PublishState oldPublishState = null;
     
     Set<Long> newLinkedContentItemSuggestions = null;
+    BaseContentItem returnValue = null;
     
     try {
       if (contentItem.getId() != null) {
@@ -161,6 +162,8 @@ public class ContentRpcImpl extends RemoteServiceServlet implements ContentRpcSe
         }
       }
 
+      returnValue = contentEntity.toClientObject();
+
       // TODO: may also want to invalidate linked content items if they changed
       // and aren't from the same living story.
       invalidateCache(contentItem.getLivingStoryId());
@@ -183,13 +186,11 @@ public class ContentRpcImpl extends RemoteServiceServlet implements ContentRpcSe
     // content item ids it passed in with those that came back, and to present appropriate
     // UI for processing the suggestions. Note that we shouldn't add the suggestions directly
     // to contentEntity! This will persist them to the datastore prematurely.
-    BaseContentItem ret = contentEntity.toClientObject();
-    
     if (newLinkedContentItemSuggestions != null) {
-      ret.addAllLinkedContentItemIds(newLinkedContentItemSuggestions);
+      returnValue.addAllLinkedContentItemIds(newLinkedContentItemSuggestions);
     }
     
-    return ret;
+    return returnValue;
   }
   
   @Override
@@ -198,42 +199,41 @@ public class ContentRpcImpl extends RemoteServiceServlet implements ContentRpcSe
   }
   
   private List<PlayerContentItem> getPlayers(Long livingStoryId) {
-    List<BaseContentEntity> playerEntities =
-        getPublishedContentEntitiesByType(livingStoryId, ContentItemType.PLAYER);
-    List<PlayerContentItem> playerContentItems = Lists.newArrayList();
-    for (BaseContentEntity playerEntity : playerEntities) {
-      playerContentItems.add((PlayerContentItem)(playerEntity.toClientObject()));
-    }
-    return playerContentItems;
+    return  getPublishedContentEntitiesByType(livingStoryId, ContentItemType.PLAYER);
   }
   
   private List<BackgroundContentItem> getConcepts(Long livingStoryId) {
-    List<BaseContentEntity> backgroundEntities = 
+    List<BackgroundContentItem> backgroundItems =
         getPublishedContentEntitiesByType(livingStoryId, ContentItemType.BACKGROUND);
-    List<BackgroundContentItem> backgroundContentItems = Lists.newArrayList();
-    for (BaseContentEntity backgroundEntity : backgroundEntities) {
-      if (!GlobalUtil.isContentEmpty(backgroundEntity.getName())) {
-        backgroundContentItems.add((BackgroundContentItem)(backgroundEntity.toClientObject()));
+    List<BackgroundContentItem> concepts = Lists.newArrayList();
+    for (BackgroundContentItem backgroundItem : backgroundItems) {
+      if (backgroundItem.isConcept()) {
+        concepts.add(backgroundItem);
       }
     }
-    return backgroundContentItems;
+    return concepts;
   }
   
-  private List<BaseContentEntity> getPublishedContentEntitiesByType(Long livingStoryId,
+  @SuppressWarnings("unchecked")
+  private <T extends BaseContentItem> List<T> getPublishedContentEntitiesByType(Long livingStoryId,
       ContentItemType contentItemType) {
     PersistenceManager pm = PMF.get().getPersistenceManager();
     
-    Query query = pm.newQuery(BaseContentEntity.class); 
-    query.setFilter("livingStoryId == livingStoryIdParam " +
+    Query query = pm.newQuery(BaseContentEntity.class);
+    query.setFilter("livingStoryId == livingStoryIdParam" +
         "&& publishState == com.google.livingstories.client.PublishState.PUBLISHED " +
         "&& contentItemType == '" + contentItemType.name() + "'");
     query.declareParameters("java.lang.Long livingStoryIdParam");
     
     try {
-      @SuppressWarnings("unchecked")
       List<BaseContentEntity> entities = (List<BaseContentEntity>) query.execute(livingStoryId);
-      pm.retrieveAll(entities);
-      return entities;
+      List<T> results = Lists.newArrayList();
+      for (BaseContentEntity entity : entities) {
+        if (!GlobalUtil.isContentEmpty(entity.getName())) {
+          results.add((T) entity.toClientObject());
+        }
+      }
+      return results;
     } finally {
       query.closeAll();
       pm.close();

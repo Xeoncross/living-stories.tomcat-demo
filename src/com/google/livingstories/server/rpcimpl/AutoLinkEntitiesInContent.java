@@ -101,6 +101,7 @@ public class AutoLinkEntitiesInContent {
   private static MatchResult match(Long contentEntityId, String content,
       List<PlayerContentItem> playerContentItems, List<BackgroundContentItem> concepts) {
     MatchResult matchResult = new MatchResult();
+
     // We need to remove the newline characters \n from the string so we can look for matches
     content = content.replaceAll("\\s+", " ");
     
