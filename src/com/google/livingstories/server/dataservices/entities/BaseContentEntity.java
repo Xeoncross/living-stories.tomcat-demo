@@ -51,7 +51,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,8 +69,6 @@ import javax.jdo.annotations.PrimaryKey;
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class BaseContentEntity
     implements Serializable, JSONSerializable, HasSerializableLivingStoryId {
-  private static final Logger logger = Logger.getLogger("BaseContentEntity");
-
   private static final Pattern EXTERNAL_LINK_PATTERN =
       Pattern.compile("<a\\b[^>]+?\\bhref=\"(?!javascript:)[^>]+?>",
           Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
@@ -268,7 +265,6 @@ public class BaseContentEntity
     this.timestamp = timestamp;
     this.contentItemType = contentItemType;
     this.content = content;
-//    this.content = new LongStringHolder(content);
     this.importance = importance;
     this.livingStoryId = livingStoryId;
   }
@@ -296,12 +292,10 @@ public class BaseContentEntity
 
   public String getContent() {
     return content;
-//    return content.getValue();
   }
 
   public void setContent(String content) {
     this.content = content;
-//    this.content = new LongStringHolder(content);
   }
 
   public Importance getImportance() {
@@ -563,9 +557,6 @@ public class BaseContentEntity
     setTimestamp(clientContentItem.getTimestamp());
     setContentItemType(clientContentItem.getContentItemType());
     setContent(fixLinks(trimWithBrs(clientContentItem.getContent())));
-    logger.severe("CLIENT CONTENT: " + clientContentItem.getContent());
-    logger.severe("FIXED CONTENT: " + fixLinks(trimWithBrs(clientContentItem.getContent())));
-    logger.severe("SERVER CONTENT: " + getContent());
     setImportance(clientContentItem.getImportance());
     setLivingStoryId(clientContentItem.getLivingStoryId());
     setThemeIds(clientContentItem.getThemeIds());
